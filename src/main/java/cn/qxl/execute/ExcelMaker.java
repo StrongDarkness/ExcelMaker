@@ -25,15 +25,17 @@ public class ExcelMaker<T> {
     private List<String> header;
     private List<T> data;
     // 第一步，创建一个webbook，对应一个Excel文件
-    private static HSSFWorkbook wb = new HSSFWorkbook();
+    private static HSSFWorkbook wb = null;
 
     public ExcelMaker() {
+       wb= new HSSFWorkbook();
     }
 
     public ExcelMaker(String title, List<String> header, List<T> data) {
         this.title = title;
         this.header = header;
         this.data = data;
+        wb=new HSSFWorkbook();
     }
 
 
@@ -57,11 +59,11 @@ public class ExcelMaker<T> {
                 cell.setCellValue(header.get(j));
             }
             // System.out.println(title);
-            if (data == null||data.size()==0) {
+            if (data == null || data.size() == 0) {
                 return this;
             }
             if (data.get(0) instanceof Map) {
-                if (header==null){
+                if (header == null) {
                     throw new IllegalArgumentException("表头不能为空！");
                 }
                 // 超过50000行分页
@@ -92,16 +94,15 @@ public class ExcelMaker<T> {
                 for (int f = 0; f < fields.length; f++) {
                     Field field = fields[f];
                     //表字段名
-                    if (field.isAnnotationPresent(Header.class)){
-                        Header header=field.getAnnotation(Header.class);
-//                        HSSFRow headRow = sheet.createRow(0);
+                    if (field.isAnnotationPresent(Header.class)) {
+                        Header header = field.getAnnotation(Header.class);
                         HSSFCell hcell = row.createCell(f);
                         hcell.setCellValue(header.value());
                     }
                 }
                 // 超过50000行分页
-                for (int n = i * pageSize - pageSize + 1; n < i * pageSize && n < data.size()+i ; n++) {
-                    row = sheet.createRow((int)( n - pageSize * i + pageSize));
+                for (int n = i * pageSize - pageSize + 1; n < i * pageSize && n < data.size() + i; n++) {
+                    row = sheet.createRow((int) (n - pageSize * i + pageSize));
                     int step = 0;//忽略字段跳过
                     outer:
                     for (int j = 0; j < fields.length; j++) {
@@ -111,7 +112,7 @@ public class ExcelMaker<T> {
                                 + field.getName().substring(1);
                         try {
                             Method method = c.getMethod(methodName, new Class[]{});
-                            Object value = method.invoke(data.get(n-i), new Object[]{});
+                            Object value = method.invoke(data.get(n - i), new Object[]{});
                             // System.out.println(value);
                             Annotation[] anns = field.getAnnotations();
                             for (Annotation ann : anns) {
@@ -168,9 +169,6 @@ public class ExcelMaker<T> {
                 throw new IllegalArgumentException("数据类型只支持Object或者map类型！");
             }
         }
-        // for (int i = 0; i < header.size(); i++) {
-        // sheet.autoSizeColumn((short) i, true);// 自动列宽
-        // }
         return this;
     }
 
@@ -296,7 +294,7 @@ public class ExcelMaker<T> {
 //            fos.close();
 //        maker.getFile("E://excel//1.xls");
 //        new ExcelMaker.Builder<Map<String, Object>>().setTitle("表").addHeader("1").addHeader("2").addHeader("3").setData(list2).build().create().getFile("E://excel//1.xls");
-        new ExcelMaker.Builder<testbean>().setTitle("表").addHeader("1").addHeader("2").addHeader("3").setData(list).build().create().getFile("E://excel//2.xls");
+        new ExcelMaker.Builder<testbean>().setTitle("表").setData(list).build().create().getFile("E://excel//2.xls");
         System.out.println("生成成功");
 //        } catch (FileNotFoundException e) {
 //            e.printStackTrace();
